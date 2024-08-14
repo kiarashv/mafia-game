@@ -1,0 +1,82 @@
+body {
+    background-image: url('https://wallpapers.com/images/hd/mafia-background-qops3espndzwpx1y.jpg');
+    background-size: cover;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 10px;
+}
+h1, h2 {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: inline-block;
+    padding: 10px;
+    border-radius: 10px;
+}
+.section {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+}
+form {
+    display: inline-block;
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+}
+input, button, textarea {
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+}
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+li {
+    background-color: rgba(0, 0, 0, 0.5);
+    margin: 5px;
+    padding: 10px;
+    border-radius: 5px;
+}
+.eliminated {
+    color: red;
+}
+
+.title-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.title-table-td {
+    border: 0px solid #000;
+    text-align: left;
+    padding: 0px;
+    width: 33%;
+    vertical-align: top;
+}
+.refresh-btn {
+    float: right;
+}
+.card-container {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 0px;
+}
+.card {
+    border: 0px solid #ccc;
+    border-radius: 10px;
+    padding: 0px;
+    text-align: center;
+    width: 200px;
+}
+.card img {
+    width: 100%;
+    border-radius: 10px;
+}
