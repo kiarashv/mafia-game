@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mafia Game</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <table class="title-table">
+            <tr>
+                <td class="title-table-td">&nbsp;</td>
+                <td class="title-table-td"><h1>Mafia Game</h1></td>
+                <td class="title-table-td"><button class="refresh-btn" onclick="location.reload()">Refresh</button></td>
+            </tr>
+        </table>
+        {% if not moderator %}
+            <div class="section">
+                <form method="post" action="/set_moderator">
+                    <h2>Enter Moderator Name</h2>
+                    <input type="text" name="moderator_name" required>
+                    <button type="submit">Set Moderator</button>
+                </form>
+            </div>
+        {% else %}
+            {% if not finished_selection %}
+                {% if session.get('player_role') == "Moderator" %}
+                    <div class="section">
+                        <form method="post" action="/select_roles">
+                            <h2>Select Roles</h2>
+                            <table class="title-table">
+                                <tr>
+                                    <td class="title-table-td">Mafia Roles</td>
+                                    <td class="title-table-td">Civilian Roles</td>
+                                    <td class="title-table-td">Independant Roles</td>
+                                </tr>
+                                <tr>
+                                    
+                                    <td class="title-table-td">
+                                        {% for i in range(4): %}
+                                            <input type="checkbox" name="roles" value="{{ roles[i] }}">{{ roles[i] }}<br>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="title-table-td">
+                                        {% for i in range(4, 13): %}
+                                            <input type="checkbox" name="roles" value="{{ roles[i] }}">{{ roles[i] }}<br>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="title-table-td">
+                                        {% for i in range(13, 15): %}
+                                            <input type="checkbox" name="roles" value="{{ roles[i] }}">{{ roles[i] }}<br>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </table>
+                            <button type="submit">Finish</button>
+                        </form>
+                    </div>
+                {% endif %}
+            {% else %}
+                {% if not reveal and session.get('player_role') != "Moderator" and session.get('player_name') == None %}
+                    <div class="section">
+                        <form method="post" action="/assign_role">
+                            <h2>Enter Your Name</h2>
+                            <input type="text" name="name" required>
+                            <button type="submit">Show Me My Role</button>
+                        </form>
+                    </div>
+                {% endif %}
+                {% if player_name %}
+                    <div class="section">
+                        <div class="card-container">
+                            {% for role in roles1 %}
+                                {% if player_role == role.name %}
+                                <div class="card">
+                                    <h3>{{ player_name }}</h3>
+                                    <img src="{{ role.image }}" alt="{{ role.name }}">
+                                    <h3>{{ role.name }}</h3>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if player_role in ["Mafia 1", "Mafia 2", "Mafia 3", "God Father"] %}
+                            <form method="get" action="/">
+                                <button type="submit" name="reveal_mafia" value="true">Show My Mafia Team</button>
+                            </form>
+                            {% if request.args.get('reveal_mafia') %}
+                                <h2>Your Mafia Team</h2>
+                                <ul>
+                                    {% for name in mafia_team %}
+                                        <li>{{ name }}: {{ players[name] }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                            <form method="post" action="/send_mafia_message">
+                                <h2>Send Message to Mafia Team</h2>
+                                <textarea name="message" required></textarea>
+                                <button type="submit">Send</button>
+                            </form>
+                            <h2>Mafia Messages</h2>
+                            <ul>
+                                {% for msg in mafia_messages %}
+                                    <li><strong>{{ msg.player }}</strong> ({{ msg.timestamp }}): {{ msg.message }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                        {%  if session.get('player_role') != "Moderator" %}
+                        <form method="post" action="/send_message_to_moderator">
+                            <h2>Send Message to Moderator</h2>
+                            <textarea name="message" required></textarea>
+                            <button type="submit">Send</button>
+                        </form>
+                        {% endif %}
+                        {% if player_name in removed_players %}
+                            <h2 class="eliminated">{{ player_name }}, You Have Been Eliminated From This Round!</h2>
+                        {% endif %}
+                        {% if player_name not in removed_players and session.get('player_role') != "Moderator"  %}
+                            <form method="post" action="/vote">
+                                <h2>Vote Now</h2>
+                                <ul>
+                                    {% for name in players %}
+                                        {% if name != player_name and name != moderator and name not in removed_players %}
+                                            <li>
+                                                <input type="checkbox" name="votes" value="{{ name }}" {% if voting_finished[player_name] %}disabled{% endif %}>{{ name }}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                                <button type="submit" {% if voting_finished[player_name] %}disabled{% endif %}>Finish Voting</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+            {% if session.get('player_role') == "Moderator" %}
+                <div class="section">
+                    <form method="post" action="/reveal_roles">
+                        <button type="submit">Reveal All Roles</button>
+                    </form>
+                    <form method="post" action="/view_votes">
+                        <button type="submit">View Votes</button>
+                    </form>
+                    <form method="post" action="/reset_votes">
+                        <button type="submit">Reset Votes</button>
+                    </form>
+                    <form method="post" action="/reset_game">
+                        <button type="submit">Reset Game</button>
+                    </form>
+                    <form method="post" action="/remove_players">
+                        <h2>Remove Players</h2>
+                        <ul>
+                            {% for name, role in players.items() %}
+                                {% if name != moderator %}
+                                    <li>
+                                        <input type="checkbox" name="remove" value="{{ name }}" {% if name in removed_players %}disabled{% endif %}>{{ name }}: {{ role }}
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                        <button type="submit">Remove Player</button>
+                    </form>
+                </div>
+                <div class="section">
+                    <h2>Messages to Moderator</h2>
+                    <ul>
+                        {% for msg in messages_to_moderator %}
+                            <li><strong>{{ msg.player }}</strong> ({{ msg.timestamp }}): {{ msg.message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endif %}
+        {% if reveal %}
+            <h2>All Players and Their Roles</h2>
+            <ul>
+                {% for name, role in players.items() %}
+                    <li>{{ name }}: {{ role }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        {% if view_votes %}
+            <h2>Votes</h2>
+            <ul>
+                {% for name, voters in votes.items() %}
+                    <li>{{ name }}: {{ voters|length }} votes ({{ voters|join(', ') }})</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
